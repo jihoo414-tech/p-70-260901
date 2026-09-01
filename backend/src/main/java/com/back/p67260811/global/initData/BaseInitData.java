@@ -1,5 +1,6 @@
 package com.back.p67260811.global.initData;
 
+import com.back.p67260811.domain.member.entity.Member;
 import com.back.p67260811.domain.member.service.MemberService;
 import com.back.p67260811.domain.post.post.entity.Post;
 import com.back.p67260811.domain.post.post.service.PostService;
@@ -26,6 +27,7 @@ public class BaseInitData {
     ApplicationRunner initDataRunner() {
         return args -> {
             self.work1();
+            self.work2();
         };
     }
 
@@ -48,6 +50,13 @@ public class BaseInitData {
         if(postService.count() > 0) {
             return;
         }
+
+        Member m1 = memberService.findByUsername("user1").get();
+        Member m2 = memberService.findByUsername("user1").get();
+
+        Post post1 = postService.write(m1,"제목1","내용1");
+        Post post2 = postService.write(m1,"제목2","내용2");
+        Post post3 = postService.write(m2,"제목3","내용3");
 
     }
 }
