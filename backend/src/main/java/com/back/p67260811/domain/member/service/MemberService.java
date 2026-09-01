@@ -22,6 +22,11 @@ public class MemberService {
         return memberRepository.save(member);
     }
 
+    public Optional<Member> findByApiKey(String apiKey) {
+        return memberRepository.findByApiKey(apiKey);
+
+    }
+
     public Optional<Member> findByUsername(String username) {
         return memberRepository.findByUsername(username);
 

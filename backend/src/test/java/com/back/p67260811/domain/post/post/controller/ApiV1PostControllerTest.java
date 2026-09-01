@@ -68,7 +68,7 @@ public class ApiV1PostControllerTest {
 
         ResultActions resultActions = mvc
                 .perform(
-                        post("/api/v1/posts")
+                        post("/api/v1/post?apiKey=0e4964dd-e0fe-434a-ad5e-0ad7be1f2ffc")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
                                         {
