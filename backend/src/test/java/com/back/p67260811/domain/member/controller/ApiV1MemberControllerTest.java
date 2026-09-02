@@ -107,6 +107,7 @@ public class ApiV1MemberControllerTest {
                 .perform(
                         post("/api/v1/members/login")
                                 .contentType(MediaType.APPLICATION_JSON)
+                                .header("Authorization", "Bearer user1")
                                 .content("""
                                         {
                                             "username": "%s",
