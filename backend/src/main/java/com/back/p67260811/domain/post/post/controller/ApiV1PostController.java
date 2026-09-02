@@ -7,6 +7,7 @@ import com.back.p67260811.domain.post.post.entity.Post;
 import com.back.p67260811.domain.post.post.service.PostService;
 import com.back.p67260811.global.dto.RsData;
 import com.back.p67260811.global.exception.ServiceException;
+import com.back.p67260811.global.rq.Rq;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -24,6 +25,7 @@ public class ApiV1PostController {
 
     private final PostService postService;
     private final MemberService memberService;
+    private final Rq rq;
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public List<PostDto> list() {
@@ -62,21 +64,9 @@ public class ApiV1PostController {
     @PostMapping
     @Transactional
     public RsData<PostDto> write(
-            @Valid @RequestBody PostWriteReqBody reqBody,
-            @RequestHeader("Authorization")
-            @NotBlank @Size
-            String apiKey
+            @Valid @RequestBody PostWriteReqBody reqBody
     ) {
-
-        String authorization = apiKey.substring(7);
-
-        Member actor = memberService
-                .findByApiKey(authorization)
-                .orElseThrow(
-                        () -> new ServiceException("401-1","해당 API key를 가진 회원이 존재하지 않습니다.")
-                );
-
-
+        Member actor = rq.getActor();
         Post post = postService.write(actor,reqBody.title, reqBody.content);
         return new RsData<>(
                 "201-1",
@@ -102,7 +92,20 @@ public class ApiV1PostController {
             @PathVariable int id,
             @Valid @RequestBody PostModifyReqBody reqBody
     ) {
+
+
+
+
+        Member actor = rq.getActor();
+
         Post post = postService.findById(id).get();
+
+        if(!actor.equals(post.getAuthor())){
+            throw new ServiceException("403-1","수정 권한이 없습니다.");
+        }
+
+
+
         postService.modify(post, reqBody.title, reqBody.content);
 
         return new RsData<>(
@@ -113,9 +116,18 @@ public class ApiV1PostController {
 
     @DeleteMapping("/{id}")
     public RsData<Void> delete(
-            @PathVariable int id
+            @PathVariable int id,
+            @RequestHeader("Authorization") @NotBlank String apiKey
+
     ) {
-        postService.delete(id);
+        Member actor = rq.getActor();
+        Post post = postService.findById(id).get();
+
+
+        if(!post.getAuthor().equals(actor)){
+            throw new ServiceException("403-1","삭제 권한이 없습니다.");
+        }
+        postService.delete(post.getId());
 
         return new RsData<>(
                 "200-1",
