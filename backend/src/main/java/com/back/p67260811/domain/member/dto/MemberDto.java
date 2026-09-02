@@ -8,14 +8,14 @@ public record MemberDto(
         int id,
         LocalDateTime createDate,
         LocalDateTime modifyDate,
-        String name
+        String nickname
 ) {
     public MemberDto(Member member) {
         this(
                 member.getId(),
                 member.getCreateDate(),
                 member.getModifyDate(),
-                member.getUsername()
+                member.getNickname()
         );
     }
 }
