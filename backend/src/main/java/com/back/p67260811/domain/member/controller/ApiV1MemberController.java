@@ -75,16 +75,13 @@ public class ApiV1MemberController {
     public RsData<MemberDto> login(
             @RequestBody @Valid LoginReqBody reqBody
     ) {
-        //1 회원존재여부
-        //2 존재하면 비밀번호 체크
-        //3 비밀번호 일치하면, 인증데이터 제공.
         Member actor = memberService.findByUsername(reqBody.username).orElseThrow(
                 () -> new ServiceException("409-1","존재하지 않는 회원입니다.")
         );
         if(!actor.getPassword().equals(reqBody.password)){
             throw new ServiceException("401-2","비밀번호가 일치하지 않습니다.");
         }
-
+        rq.addCookie("apiKey",actor.getApiKey());
         return new RsData(
                 "200-1",
                 "%s님 반갑습니다!".formatted(actor.getNickname()),

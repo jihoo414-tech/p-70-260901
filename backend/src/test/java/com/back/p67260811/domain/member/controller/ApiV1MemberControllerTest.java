@@ -3,6 +3,7 @@ package com.back.p67260811.domain.member.controller;
 
 import com.back.p67260811.domain.member.entity.Member;
 import com.back.p67260811.domain.member.repository.MemberRepository;
+import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -107,7 +109,6 @@ public class ApiV1MemberControllerTest {
                 .perform(
                         post("/api/v1/members/login")
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .header("Authorization", "Bearer user1")
                                 .content("""
                                         {
                                             "username": "%s",
@@ -125,12 +126,27 @@ public class ApiV1MemberControllerTest {
                 .andExpect(handler().methodName("login"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.resultCode").value("200-1"))
-                .andExpect(jsonPath("$.msg").value("%s님 환영합니다.".formatted(username)))
-                .andExpect(jsonPath("$.data.apiKey").exists());
-//                .andExpect(jsonPath("$.data.memberDto.id").value(member.getId()))
-//                .andExpect(jsonPath("$.data.memberDto.createDate").value(member.getCreateDate()))
-//                .andExpect(jsonPath("$.data.memberDto.modifyDate").value(member.getModifyDate()))
-//                .andExpect(jsonPath("$.data.memberDto.name").value(member.getName()));
+                .andExpect(jsonPath("$.msg").value("%s님 반갑습니다!".formatted(member.getNickname())))
+                .andExpect(jsonPath("$.data.apiKey").exists())
+                .andExpect(jsonPath("$.data.memberDto.id").value(member.getId()))
+                .andExpect(jsonPath("$.data.memberDto.createDate").exists())
+                .andExpect(jsonPath("$.data.memberDto.modifyDate").exists())
+                .andExpect(jsonPath("$.data.memberDto.nickname").value(member.getNickname()));
+
+        resultActions.andExpect(
+                result -> {
+                    Cookie apiKeyCookie = result.getResponse().getCookie("apiKey");
+
+                    assertThat(apiKeyCookie).isNotNull();
+                    assertThat(apiKeyCookie.getPath()).isEqualTo("/");
+                    assertThat(apiKeyCookie.getDomain()).isEqualTo("localhost");
+                    assertThat(apiKeyCookie.isHttpOnly()).isEqualTo(true);
+
+                    if(apiKeyCookie != null) {
+                        assertThat(apiKeyCookie.getValue()).isNotBlank();
+                    }
+                }
+        );
 
     }
 }
