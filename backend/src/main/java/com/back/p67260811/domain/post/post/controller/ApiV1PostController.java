@@ -6,7 +6,6 @@ import com.back.p67260811.domain.post.post.dto.PostDto;
 import com.back.p67260811.domain.post.post.entity.Post;
 import com.back.p67260811.domain.post.post.service.PostService;
 import com.back.p67260811.global.dto.RsData;
-import com.back.p67260811.global.exception.ServiceException;
 import com.back.p67260811.global.rq.Rq;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -100,10 +99,7 @@ public class ApiV1PostController {
 
         Post post = postService.findById(id).get();
 
-        if(!actor.equals(post.getAuthor())){
-            throw new ServiceException("403-1","수정 권한이 없습니다.");
-        }
-
+        post.checkActorModify(actor);
 
 
         postService.modify(post, reqBody.title, reqBody.content);
@@ -117,16 +113,14 @@ public class ApiV1PostController {
     @DeleteMapping("/{id}")
     public RsData<Void> delete(
             @PathVariable int id,
-            @RequestHeader("Authorization") @NotBlank String apiKey
+            @RequestHeader("Authorization") String apiKey
 
     ) {
         Member actor = rq.getActor();
         Post post = postService.findById(id).get();
 
 
-        if(!post.getAuthor().equals(actor)){
-            throw new ServiceException("403-1","삭제 권한이 없습니다.");
-        }
+        post.checkoutActorDelete(actor);
         postService.delete(post.getId());
 
         return new RsData<>(
