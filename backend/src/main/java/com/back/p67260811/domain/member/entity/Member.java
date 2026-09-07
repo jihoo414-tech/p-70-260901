@@ -29,4 +29,8 @@ public class Member extends BaseEntity {
         this(username, password, nickname);
         this.apiKey = apiKey;
     }
+    public Member(int id, String username){
+        this.setId(id);
+        this.username = username;
+    }
 }

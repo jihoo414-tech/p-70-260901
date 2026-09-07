@@ -46,17 +46,19 @@ public class Rq {
 
 
         Member member = null;
-
+        //먼저 accessToken으로 확인해봄.
         if (!accessToken.isBlank()) {
             Map<String, Object> payload = memberService.payloadOrNull(accessToken);
 
             if (payload != null) {
                 int id = (int) payload.get("id");
-                member = memberService.findById(id)
-                        .orElseThrow(() -> new ServiceException("401-4", "accessToken의 id에 해당하는 회원이 존재하지 않습니다."));
+                String username = (String) payload.get("username");
+
+                member = new Member(id, username);
             }
         }
 
+        //accessToken으로 안되면, API KEY(Refresh Token)으로 확인.
         if (member == null) {
 
             if (apiKey.isBlank())
