@@ -6,6 +6,7 @@ import com.back.p67260811.global.exception.ServiceException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -14,6 +15,7 @@ import java.util.UUID;
 public class MemberService {
 
     private final MemberRepository memberRepository;
+    private final AuthTokenService authTokenService;
 
     public long count() {
         return memberRepository.count();
@@ -42,6 +44,18 @@ public class MemberService {
     }
 
     public Optional<Member> findByApiKey(String apiKey) {
+
         return memberRepository.findByApiKey(apiKey);
+    }
+    public String getAccessToken(Member member){
+        return authTokenService.genAccessToken(member);
+
+    }
+    public Map<String, Object> payloadOrNull(String jwt) {
+        return authTokenService.payloadOrNull(jwt);
+    }
+
+    public Optional<Member> findById(int id) {
+        return memberRepository.findById(id);
     }
 }

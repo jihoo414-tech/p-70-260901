@@ -17,7 +17,7 @@ public class Member extends BaseEntity {
     private String password;
     private String nickname;
     @Column(unique = true)
-    private String apiKey; //나중에 활용할 가치가 있삼.
+    private String apiKey; //나중에 활용 -> 리프레시 토큰.
     public Member(String username, String password, String nickname) {
         this.username = username;
         this.password = password;
