@@ -66,6 +66,7 @@ public class ApiV1PostController {
             @Valid @RequestBody PostWriteReqBody reqBody
     ) {
         Member actor = rq.getActor();
+//        Member realActor = memberService.findById(actor.getId()).get();
         Post post = postService.write(actor,reqBody.title, reqBody.content);
         return new RsData<>(
                 "201-1",
