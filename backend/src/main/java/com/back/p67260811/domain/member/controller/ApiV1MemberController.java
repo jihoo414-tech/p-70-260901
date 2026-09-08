@@ -83,6 +83,7 @@ public class ApiV1MemberController {
         if(!actor.getPassword().equals(reqBody.password)){
             throw new ServiceException("401-2","비밀번호가 일치하지 않습니다.");
         }
+        memberService.checkPassword(reqBody.password, actor.getPassword());
         String accessToken = memberService.getAccessToken(actor);
         rq.addCookie("accessToken", accessToken);
         return new RsData(
