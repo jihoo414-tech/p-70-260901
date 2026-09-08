@@ -74,4 +74,7 @@ public class MemberService {
         }
     }
 
+    public String genAccessToken(Member member) {
+        return authTokenService.genAccessToken(member);
+    }
 }
