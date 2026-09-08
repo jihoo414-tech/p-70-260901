@@ -46,8 +46,11 @@ public class Rq {
 
 
         Member member = null;
+
+        boolean isAccessTokenExists = !accessToken.isBlank();
+        boolean isAccessTokenValid = false;
         //먼저 accessToken으로 확인해봄.
-        if (!accessToken.isBlank()) {
+        if (isAccessTokenExists) {
             Map<String, Object> payload = memberService.payloadOrNull(accessToken);
 
             if (payload != null) {
@@ -56,6 +59,7 @@ public class Rq {
                 String nickname = (String) payload.get("nickname");
 
                 member = new Member(id, username, nickname);
+                isAccessTokenValid = true;
             }
         }
 
@@ -68,10 +72,21 @@ public class Rq {
             member = memberService
                     .findByApiKey(apiKey)
                     .orElseThrow(() -> new ServiceException("401-3", "API 키가 유효하지 않습니다."));
+
+        }
+
+        if (isAccessTokenExists && !isAccessTokenValid) {
+            String newAccessToken = memberService.getAccessToken(member);
+            addCookie("accessToken", newAccessToken);
+            setHeader("accessToken", newAccessToken);
         }
 
         return member;
 
+    }
+
+    private void setHeader(String name, String value) {
+        response.setHeader(name, value);
     }
 
     private String getCookieValue(String name, String defaultValue) {
