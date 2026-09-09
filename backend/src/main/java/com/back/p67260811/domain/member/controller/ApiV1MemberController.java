@@ -80,9 +80,7 @@ public class ApiV1MemberController {
         Member actor = memberService.findByUsername(reqBody.username).orElseThrow(
                 () -> new ServiceException("409-1","존재하지 않는 회원입니다.")
         );
-        if(!actor.getPassword().equals(reqBody.password)){
-            throw new ServiceException("401-2","비밀번호가 일치하지 않습니다.");
-        }
+
         memberService.checkPassword(reqBody.password, actor.getPassword());
         String accessToken = memberService.getAccessToken(actor);
         rq.addCookie("accessToken", accessToken);

@@ -2,6 +2,7 @@ package com.back.p67260811.global.security;
 
 import com.back.p67260811.domain.member.entity.Member;
 import com.back.p67260811.domain.member.service.MemberService;
+import com.back.p67260811.global.dto.RsData;
 import com.back.p67260811.global.exception.ServiceException;
 import com.back.p67260811.global.rq.Rq;
 import jakarta.servlet.FilterChain;
@@ -9,6 +10,11 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -19,6 +25,7 @@ import java.util.Map;
 @Component
 @RequiredArgsConstructor
 public class CustomAuthenticationFilter extends OncePerRequestFilter {
+
     private final MemberService memberService;
     private final Rq rq;
 
@@ -26,12 +33,34 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         logger.debug("CustomAuthenticationFilter called");
 
-        if(!request.getRequestURI().startsWith("/api/")){
-            filterChain.doFilter(request,response);
+        try {
+            authenticate(request, response, filterChain);
+        } catch (ServiceException e) {
+
+            RsData rsData = e.getRsData();
+            response.setContentType("application/json; charset=UTF-8");
+            response.setStatus(rsData.getStatusCode());
+            response.getWriter().write("""
+                    {
+                        "resultCode": "%s",
+                        "msg": "%s"
+                    }
+                    """.formatted(rsData.getResultCode(), rsData.getMsg()));
+
+        } catch (Exception e) {
+            throw e;
+        }
+
+    }
+
+    private void authenticate(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+        if(!request.getRequestURI().startsWith("/api/")) {
+            filterChain.doFilter(request, response);
             return;
         }
-        if(List.of("/api/v1/members/join\", \"/api/v1/members/login").contains(request.getRequestURI())){
-            filterChain.doFilter(request,response);
+
+        if(List.of("/api/v1/members/join", "/api/v1/members/login").contains(request.getRequestURI())) {
+            filterChain.doFilter(request, response);
             return;
         }
 
@@ -85,5 +114,25 @@ public class CustomAuthenticationFilter extends OncePerRequestFilter {
             rq.addCookie("accessToken", newAccessToken);
             rq.setHeader("accessToken", newAccessToken);
         }
+
+        UserDetails user = new User(
+                member.getUsername(),
+                "",
+                List.of()
+        );
+
+        Authentication authentication = new UsernamePasswordAuthenticationToken(
+                user,
+                user.getPassword(),
+                user.getAuthorities()
+        );
+
+
+        SecurityContextHolder
+                .getContext()
+                .setAuthentication(authentication);
+
+
+        filterChain.doFilter(request, response);
     }
 }

@@ -1,7 +1,9 @@
 package com.back.p67260811.global.exception;
 
 import com.back.p67260811.global.dto.RsData;
+import lombok.Getter;
 
+@Getter
 public class ServiceException extends RuntimeException{
     private RsData rsData;
     public ServiceException(String resultCode, String message){
@@ -17,5 +19,7 @@ public class ServiceException extends RuntimeException{
     public String getMessage(){
         return rsData.getMsg();
     }
+
+
 
 }
