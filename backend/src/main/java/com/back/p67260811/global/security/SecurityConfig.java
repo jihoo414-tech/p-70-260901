@@ -27,6 +27,7 @@ public class SecurityConfig {
                                 "/api/*/posts/{postId:\\d+}/comments", "/api/*/posts/{postId:\\d+}/comments/{commentId:\\d+}").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/v1/members/login", "/api/v1/members/join").permitAll()
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/members/logout").permitAll()
+                        .requestMatchers("/api/*/adm/**").hasRole("ADMIN")
                         .requestMatchers("/api/*/**").authenticated())
                 .csrf((csrf) -> csrf.disable())
                 .headers((headers) -> headers
@@ -36,7 +37,7 @@ public class SecurityConfig {
                 .exceptionHandling(
                 exceptionHandling -> exceptionHandling
                         .authenticationEntryPoint((request, response, authenticationException) -> {
-                            response.setContentType("application/json");
+                            response.setContentType("application/json; charset=UTF-8");
                             response.setStatus(401);
                             response.getWriter().write(
                                     """
